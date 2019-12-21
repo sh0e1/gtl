@@ -30,8 +30,6 @@ const (
 
 var rootCmd = &cobra.Command{
 	Use: "gtl",
-	//Short: "",
-	//Long:  ``,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := metadata.AppendToOutgoingContext(context.Background(), "x-goog-api-key", apiKey)
 		ctx = metadata.AppendToOutgoingContext(ctx, "x-goog-user-project", projectID)
@@ -53,17 +51,20 @@ var rootCmd = &cobra.Command{
 		}
 
 		for _, t := range resp.GetTranslations() {
-			fmt.Println(t.GetTranslatedText())
+			cmd.Println(t.GetTranslatedText())
 		}
 		return nil
 	},
+	TraverseChildren: true,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
+	rootCmd.SetOutput(os.Stdout)
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		rootCmd.SetOut(os.Stderr)
+		rootCmd.Println(err)
 		os.Exit(1)
 	}
 }
@@ -82,7 +83,7 @@ func init() {
 	//rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
 	rootCmd.PersistentFlags().StringVarP(&apiKey, "api-key", "k", os.Getenv("GTL_API_KEY"), "")
-	rootCmd.PersistentFlags().StringVarP(&projectID, "project-id", "p", os.Getenv("GTL_GCP_PROJECT_ID"), "")
+	rootCmd.PersistentFlags().StringVarP(&projectID, "gcp-project", "p", os.Getenv("GTL_GCP_PROJECT_ID"), "")
 
 	rootCmd.Flags().StringVarP(&target, "target", "t", defaultTarget, "")
 	rootCmd.Flags().StringVarP(&source, "source", "s", defaultSource, "")
