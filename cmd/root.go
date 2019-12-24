@@ -5,12 +5,10 @@ import (
 	"fmt"
 	"os"
 
-	translate "cloud.google.com/go/translate/apiv3"
 	homedir "github.com/mitchellh/go-homedir"
+	"github.com/sh0e1/gtl/translate"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	translatepb "google.golang.org/genproto/googleapis/cloud/translate/v3"
-	"google.golang.org/grpc/metadata"
 )
 
 var cfgFile string
@@ -31,27 +29,19 @@ const (
 var rootCmd = &cobra.Command{
 	Use: "gtl",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		ctx := metadata.AppendToOutgoingContext(context.Background(), "x-goog-api-key", apiKey)
-		ctx = metadata.AppendToOutgoingContext(ctx, "x-goog-user-project", projectID)
-		client, err := translate.NewTranslationClient(ctx)
+		ctx := context.Background()
+		c, err := translate.NewClient(ctx, projectID, apiKey)
 		if err != nil {
 			return err
 		}
-		defer client.Close()
+		defer c.Close()
 
-		req := &translatepb.TranslateTextRequest{
-			Contents:           args,
-			SourceLanguageCode: source,
-			TargetLanguageCode: target,
-			Parent:             "projects/" + projectID,
-		}
-		resp, err := client.TranslateText(ctx, req)
+		translated, err := c.TranslateText(ctx, source, target, args)
 		if err != nil {
-			return err
+			return nil
 		}
-
-		for _, t := range resp.GetTranslations() {
-			cmd.Println(t.GetTranslatedText())
+		for _, t := range translated {
+			cmd.Println(t)
 		}
 		return nil
 	},
