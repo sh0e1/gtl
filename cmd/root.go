@@ -30,7 +30,7 @@ var rootCmd = &cobra.Command{
 	Use: "gtl",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
-		c, err := translate.NewClient(ctx, projectID, apiKey)
+		c, err := translate.New(ctx, projectID, apiKey)
 		if err != nil {
 			return err
 		}
@@ -41,7 +41,7 @@ var rootCmd = &cobra.Command{
 			return nil
 		}
 		for _, t := range translated {
-			cmd.Println(t)
+			cmd.Println(t.GetTranslatedText())
 		}
 		return nil
 	},

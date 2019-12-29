@@ -4,57 +4,76 @@ import (
 	"context"
 
 	translate "cloud.google.com/go/translate/apiv3"
+	"golang.org/x/text/language"
 	translatepb "google.golang.org/genproto/googleapis/cloud/translate/v3"
 	"google.golang.org/grpc/metadata"
 )
 
-// NewClient ...
-func NewClient(ctx context.Context, projectID, apiKey string) (*Client, error) {
+// Translator ...
+type Translator interface {
+	TranslateText(ctx context.Context, source, target string, contents []string) ([]*translatepb.Translation, error)
+	GetSupportedLanguages(ctx context.Context, lang language.Tag) ([]*translatepb.SupportedLanguage, error)
+	Close()
+}
+
+// New ...
+func New(ctx context.Context, projectID, apiKey string) (Translator, error) {
 	c, err := translate.NewTranslationClient(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return &Client{
+	return &client{
 		TranslationClient: c,
 		projectID:         projectID,
 		apiKey:            apiKey,
 	}, nil
 }
 
-// Client ...
-type Client struct {
+type client struct {
 	*translate.TranslationClient
 	projectID string
 	apiKey    string
 }
 
 // Close ...
-func (c *Client) Close() {
-	c.TranslationClient.Close()
+func (c *client) Close() {
+	_ = c.TranslationClient.Close()
 }
 
 // TranslateText ...
-func (c *Client) TranslateText(ctx context.Context, source, target string, contents []string) ([]string, error) {
+func (c *client) TranslateText(ctx context.Context, source, target string, contents []string) ([]*translatepb.Translation, error) {
 	req := &translatepb.TranslateTextRequest{
 		Contents:           contents,
 		SourceLanguageCode: source,
 		TargetLanguageCode: target,
-		Parent:             "projects/" + c.projectID,
+		Parent:             c.parent(),
 	}
-	resp, err := c.TranslationClient.TranslateText(c.appendContext(ctx), req)
+	resp, err := c.TranslationClient.TranslateText(c.appendToOutgoingContext(ctx), req)
 	if err != nil {
 		return nil, err
 	}
-
-	translated := make([]string, 0, len(resp.GetTranslations()))
-	for _, t := range resp.GetTranslations() {
-		translated = append(translated, t.GetTranslatedText())
-	}
-	return translated, nil
+	return resp.GetTranslations(), nil
 }
 
-func (c *Client) appendContext(ctx context.Context) context.Context {
+// GetSupportedLanguages ...
+func (c *client) GetSupportedLanguages(ctx context.Context, lang language.Tag) ([]*translatepb.SupportedLanguage, error) {
+	req := &translatepb.GetSupportedLanguagesRequest{
+		Parent:              c.parent(),
+		DisplayLanguageCode: lang.String(),
+	}
+	resp, err := c.TranslationClient.GetSupportedLanguages(c.appendToOutgoingContext(ctx), req)
+	if err != nil {
+		return nil, err
+	}
+	return resp.GetLanguages(), nil
+}
+
+func (c *client) appendToOutgoingContext(ctx context.Context) context.Context {
 	ctx = metadata.AppendToOutgoingContext(ctx, "x-goog-user-project", c.projectID)
 	ctx = metadata.AppendToOutgoingContext(ctx, "x-goog-api-key", c.apiKey)
 	return ctx
+}
+
+func (c *client) parent() string {
+	return "projects/" + c.projectID
 }

@@ -3,11 +3,9 @@ package cmd
 import (
 	"context"
 
-	translate "cloud.google.com/go/translate/apiv3"
+	"github.com/sh0e1/gtl/translate"
 	"github.com/spf13/cobra"
 	"golang.org/x/text/language"
-	translatepb "google.golang.org/genproto/googleapis/cloud/translate/v3"
-	"google.golang.org/grpc/metadata"
 )
 
 // listCmd represents the list command
@@ -16,24 +14,18 @@ var listCmd = &cobra.Command{
 	//Short: "",
 	//Long:  "",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		ctx := metadata.AppendToOutgoingContext(context.Background(), "x-goog-api-key", apiKey)
-		ctx = metadata.AppendToOutgoingContext(ctx, "x-goog-user-project", projectID)
-		client, err := translate.NewTranslationClient(ctx)
+		ctx := context.Background()
+		c, err := translate.New(ctx, projectID, apiKey)
 		if err != nil {
 			return err
 		}
-		defer client.Close()
+		defer c.Close()
 
-		req := &translatepb.GetSupportedLanguagesRequest{
-			Parent:              "projects/" + projectID,
-			DisplayLanguageCode: language.Japanese.String(),
-		}
-		resp, err := client.GetSupportedLanguages(ctx, req)
+		langs, err := c.GetSupportedLanguages(ctx, language.Japanese)
 		if err != nil {
 			return err
 		}
-
-		for _, l := range resp.GetLanguages() {
+		for _, l := range langs {
 			cmd.Printf("%-5s : %s\n", l.GetLanguageCode(), l.GetDisplayName())
 		}
 		return nil
