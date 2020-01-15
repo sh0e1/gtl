@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 
@@ -11,26 +12,37 @@ import (
 	"github.com/spf13/viper"
 )
 
-var cfgFile string
-
 var (
-	apiKey    string
-	projectID string
+	cfgFile string
 
-	target string
+	apiKey       string
+	gcpProjectID string
+
 	source string
-)
-
-const (
-	defaultTarget = "ja"
-	defaultSource = "en"
+	target string
 )
 
 var rootCmd = &cobra.Command{
-	Use: "gtl",
+	Use:   "gtl [text to translate]",
+	Short: "Translate input text",
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		if tmp := os.Getenv("GTL_API_KEY"); tmp == "" && apiKey == "" {
+			return errors.New("api-key is empty")
+		} else if tmp != "" && apiKey == "" {
+			apiKey = tmp
+		}
+
+		if tmp := os.Getenv("GTL_GCP_PROJECT_ID"); tmp == "" && gcpProjectID == "" {
+			return errors.New("gcp-project-id is empty")
+		} else if tmp != "" && gcpProjectID == "" {
+			gcpProjectID = tmp
+		}
+
+		return nil
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
-		c, err := translate.New(ctx, projectID, apiKey)
+		c, err := translate.New(ctx, gcpProjectID, apiKey)
 		if err != nil {
 			return err
 		}
@@ -60,23 +72,19 @@ func Execute() {
 }
 
 func init() {
+	const (
+		defaultTarget = "ja"
+		defaultSource = "en"
+	)
+
 	cobra.OnInitialize(initConfig)
 
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
+	//rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.gtl.yaml)")
+	rootCmd.PersistentFlags().StringVar(&apiKey, "api-key", "", "default is environment variable $GTL_API_KEY")
+	rootCmd.PersistentFlags().StringVar(&gcpProjectID, "gcp-project-id", "", "default is $GTL_GCP_PROJECT_ID")
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.gtl.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	//rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
-	rootCmd.PersistentFlags().StringVarP(&apiKey, "api-key", "k", os.Getenv("GTL_API_KEY"), "")
-	rootCmd.PersistentFlags().StringVarP(&projectID, "gcp-project", "p", os.Getenv("GTL_GCP_PROJECT_ID"), "")
-
-	rootCmd.Flags().StringVarP(&target, "target", "t", defaultTarget, "")
-	rootCmd.Flags().StringVarP(&source, "source", "s", defaultSource, "")
+	rootCmd.Flags().StringVar(&source, "source", defaultSource, "BCP-47 language code of input text")
+	rootCmd.Flags().StringVar(&target, "target", defaultTarget, "BCP-47 language code of used to translate input text")
 }
 
 // initConfig reads in config file and ENV variables if set.

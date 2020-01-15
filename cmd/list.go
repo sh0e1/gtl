@@ -15,7 +15,7 @@ var listCmd = &cobra.Command{
 	//Long:  "",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
-		c, err := translate.New(ctx, projectID, apiKey)
+		c, err := translate.New(ctx, gcpProjectID, apiKey)
 		if err != nil {
 			return err
 		}
