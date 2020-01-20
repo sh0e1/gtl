@@ -9,39 +9,40 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-// Translator ...
+// Translator is translator client interface.
 type Translator interface {
 	TranslateText(ctx context.Context, source, target string, contents []string) ([]*translatepb.Translation, error)
 	GetSupportedLanguages(ctx context.Context, lang language.Tag) ([]*translatepb.SupportedLanguage, error)
 	Close()
 }
 
-// New ...
+// New returns translator client interface.
 func New(ctx context.Context, projectID, apiKey string) (Translator, error) {
 	c, err := translate.NewTranslationClient(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return &client{
+	return &Client{
 		TranslationClient: c,
-		projectID:         projectID,
-		apiKey:            apiKey,
+		ProjectID:         projectID,
+		ApiKey:            apiKey,
 	}, nil
 }
 
-type client struct {
+// Client
+type Client struct {
 	*translate.TranslationClient
-	projectID string
-	apiKey    string
+	ProjectID string
+	ApiKey    string
 }
 
-// Close ...
-func (c *client) Close() {
+// Close closes the connection.
+func (c *Client) Close() {
 	_ = c.TranslationClient.Close()
 }
 
-// TranslateText ...
-func (c *client) TranslateText(ctx context.Context, source, target string, contents []string) ([]*translatepb.Translation, error) {
+// TranslateText translates text.
+func (c *Client) TranslateText(ctx context.Context, source, target string, contents []string) ([]*translatepb.Translation, error) {
 	req := &translatepb.TranslateTextRequest{
 		Contents:           contents,
 		SourceLanguageCode: source,
@@ -55,8 +56,8 @@ func (c *client) TranslateText(ctx context.Context, source, target string, conte
 	return resp.GetTranslations(), nil
 }
 
-// GetSupportedLanguages ...
-func (c *client) GetSupportedLanguages(ctx context.Context, lang language.Tag) ([]*translatepb.SupportedLanguage, error) {
+// GetSupportedLanguages gets support languages.
+func (c *Client) GetSupportedLanguages(ctx context.Context, lang language.Tag) ([]*translatepb.SupportedLanguage, error) {
 	req := &translatepb.GetSupportedLanguagesRequest{
 		Parent:              c.parent(),
 		DisplayLanguageCode: lang.String(),
@@ -68,12 +69,12 @@ func (c *client) GetSupportedLanguages(ctx context.Context, lang language.Tag) (
 	return resp.GetLanguages(), nil
 }
 
-func (c *client) appendToOutgoingContext(ctx context.Context) context.Context {
-	ctx = metadata.AppendToOutgoingContext(ctx, "x-goog-user-project", c.projectID)
-	ctx = metadata.AppendToOutgoingContext(ctx, "x-goog-api-key", c.apiKey)
+func (c *Client) appendToOutgoingContext(ctx context.Context) context.Context {
+	ctx = metadata.AppendToOutgoingContext(ctx, "x-goog-user-project", c.ProjectID)
+	ctx = metadata.AppendToOutgoingContext(ctx, "x-goog-api-key", c.ApiKey)
 	return ctx
 }
 
-func (c *client) parent() string {
-	return "projects/" + c.projectID
+func (c *Client) parent() string {
+	return "projects/" + c.ProjectID
 }
