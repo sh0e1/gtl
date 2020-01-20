@@ -3,10 +3,10 @@ on: [push]
 
 jobs:
   lint:
-    name: Lint
+    name: Check lint
     runs-on: ubuntu-latest
     steps:
-    - name: Install golangci-lint
+    - name: Set up Go 1.13
       uses: actions/setup-go@v1
       with:
         go-version: 1.13
@@ -16,8 +16,8 @@ jobs:
 
     - name: Install golangci-lint
       run: |
-        curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.23.1
+        curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.23.1
         golangci-lint --version
 
-    - name: Exec golangci-lint
+    - name: Run golangci-lint
       run: golangci-lint run ./... -E misspell
