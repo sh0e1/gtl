@@ -16,9 +16,12 @@ jobs:
 
     - name: Install golangci-lint
       run: |
+        echo $PWD
+        go env
         curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.23.1
-        echo $GOPATH
-        echo $PATH
 
     - name: Run golangci-lint
-      run: $(go env GOPATH)/golangci-lint run ./... -E misspell
+      run: |
+        echo $PWD
+        go env
+        $(go env GOPATH)/golangci-lint run ./... -E misspell
