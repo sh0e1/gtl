@@ -1,5 +1,7 @@
 # gtl
 
+![](https://github.com/sh0e1/gtl/workflows/.github/workflows/workflow.yaml/badge.svg)
+
 ## Overview
 
 Google Translate CLI
