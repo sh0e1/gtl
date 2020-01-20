@@ -18,10 +18,12 @@ jobs:
       run: |
         echo $PWD
         go env
+        printenv
         curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.23.1
 
     - name: Run golangci-lint
       run: |
         echo $PWD
         go env
+        printenv
         $(go env GOPATH)/golangci-lint run ./... -E misspell
