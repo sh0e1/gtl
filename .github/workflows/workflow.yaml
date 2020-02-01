@@ -34,6 +34,12 @@ jobs:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
 
+    - name: Set up Google application credentials
+      env:
+        GOOGLE_APPLICATION_CREDENTIALS: /usr/local/etc/google/credentials.json
+      run: |
+        echo ${{ secrets.GCP_SERVICE_ACCOUNT }} > $GOOGLE_APPLICATION_CREDENTIALS
+
     - name: Run unit test
       run: |
         make test
