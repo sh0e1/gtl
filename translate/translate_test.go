@@ -21,13 +21,17 @@ func TestNew(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer func() {
+		_ = tc.Close()
+	}()
+
 	want := &translate.Client{
 		TranslationClient: tc,
 		ProjectID:         projectID,
 		ApiKey:            apiKey,
 	}
 
-	got, err := translate.New(context.Background(), projectID, apiKey)
+	got, err := translate.New(ctx, projectID, apiKey)
 	if err != nil {
 		t.Errorf("err should be nil, but got %q", err)
 		return
