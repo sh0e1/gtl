@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	googletrans "cloud.google.com/go/translate/apiv3"
+	translatev3 "cloud.google.com/go/translate/apiv3"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/sh0e1/gtl/translate"
@@ -17,7 +17,7 @@ func TestNew(t *testing.T) {
 	projectID := "project-id"
 	apiKey := "api-key"
 
-	tc, err := googletrans.NewTranslationClient(ctx)
+	tc, err := translatev3.NewTranslationClient(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,7 +35,7 @@ func TestNew(t *testing.T) {
 	defer got.Close()
 
 	if diff := cmp.Diff(want, got,
-		cmpopts.IgnoreTypes(googletrans.TranslationClient{})); diff != "" {
+		cmpopts.IgnoreTypes(translatev3.TranslationClient{})); diff != "" {
 		t.Errorf("differs (-want +got):\n%s", diff)
 	}
 }
