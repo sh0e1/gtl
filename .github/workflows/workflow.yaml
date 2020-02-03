@@ -36,7 +36,7 @@ jobs:
 
     - name: Set up Google application credentials
       run: |
-        echo '${{ secrets.GCP_SERVICE_ACCOUNT }}' > $GITHUB_WORKSPACE/credentials.json
+        echo '${{ secrets.GCP_SERVICE_ACCOUNT }}' | base64 -D > $GITHUB_WORKSPACE/credentials.json
 
     - name: Run unit test
       env:
