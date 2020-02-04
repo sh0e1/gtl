@@ -31,29 +31,22 @@ var rootCmd = &cobra.Command{
 		} else if tmp != "" && apiKey == "" {
 			apiKey = tmp
 		}
-
-		if tmp := os.Getenv("GTL_GCP_PROJECT_ID"); tmp == "" && gcpProjectID == "" {
-			return errors.New("gcp-project-id is empty")
-		} else if tmp != "" && gcpProjectID == "" {
-			gcpProjectID = tmp
-		}
-
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
-		c, err := translate.New(ctx, gcpProjectID, apiKey)
+		c, err := translate.New(ctx, apiKey)
 		if err != nil {
 			return err
 		}
 		defer c.Close()
 
-		translated, err := c.TranslateText(ctx, source, target, args)
+		translated, err := c.Translate(ctx, source, target, args)
 		if err != nil {
 			return nil
 		}
 		for _, t := range translated {
-			cmd.Println(t.GetTranslatedText())
+			cmd.Println(t.Text)
 		}
 		return nil
 	},

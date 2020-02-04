@@ -14,10 +14,9 @@ var listCmd = &cobra.Command{
 	Short: "Displays a list of supported languages",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		apiKey, _ := rootCmd.PersistentFlags().GetString("api-key")
-		gcpProjectID, _ := rootCmd.PersistentFlags().GetString("gcp-project-id")
 
 		ctx := context.Background()
-		c, err := translate.New(ctx, gcpProjectID, apiKey)
+		c, err := translate.New(ctx, apiKey)
 		if err != nil {
 			return err
 		}
@@ -28,7 +27,7 @@ var listCmd = &cobra.Command{
 			return err
 		}
 		for _, l := range langs {
-			cmd.Printf("%-5s : %s\n", l.GetLanguageCode(), l.GetDisplayName())
+			cmd.Printf("%-5s : %s\n", l.Tag.String(), l.Name)
 		}
 		return nil
 	},

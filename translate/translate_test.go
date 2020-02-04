@@ -4,20 +4,20 @@ import (
 	"context"
 	"testing"
 
-	translatev3 "cloud.google.com/go/translate/apiv3"
+	googletranslate "cloud.google.com/go/translate"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/sh0e1/gtl/translate"
+	"google.golang.org/api/option"
 )
 
 func TestNew(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
-	projectID := "project-id"
 	apiKey := "api-key"
 
-	tc, err := translatev3.NewTranslationClient(ctx)
+	tc, err := googletranslate.NewClient(ctx, option.WithAPIKey(apiKey))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -26,12 +26,10 @@ func TestNew(t *testing.T) {
 	}()
 
 	want := &translate.Client{
-		TranslationClient: tc,
-		ProjectID:         projectID,
-		ApiKey:            apiKey,
+		Client: tc,
 	}
 
-	got, err := translate.New(ctx, projectID, apiKey)
+	got, err := translate.New(ctx, apiKey)
 	if err != nil {
 		t.Errorf("err should be nil, but got %q", err)
 		return
@@ -39,12 +37,12 @@ func TestNew(t *testing.T) {
 	defer got.Close()
 
 	if diff := cmp.Diff(want, got,
-		cmpopts.IgnoreTypes(translatev3.TranslationClient{})); diff != "" {
+		cmpopts.IgnoreTypes(googletranslate.Client{})); diff != "" {
 		t.Errorf("differs (-want +got):\n%s", diff)
 	}
 }
 
-func TestClient_TranslateText(t *testing.T) {
+func TestClient_Translate(t *testing.T) {
 	t.Parallel()
 	t.Log("TODO: implement")
 }
