@@ -34,12 +34,6 @@ jobs:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
 
-    - name: Set up Google application credentials
-      run: |
-        echo '${{ secrets.GCP_SERVICE_ACCOUNT }}' | base64 -d > $GITHUB_WORKSPACE/credentials.json
-
     - name: Run unit test
-      env:
-        GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/credentials.json
       run: |
         make test
