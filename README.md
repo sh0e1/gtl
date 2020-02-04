@@ -16,10 +16,7 @@ go install $GOPATH/src/github.com/sh0e1/gtl
 ## Usage
 
 ```
-gtl Hello \
-  --api-key=YOUR_API_KEY \
-  --gcp-project-id=YOUR_GCP_PROJECT_ID
-
+gtl --api-key=YOUR_API_KEY Hello
 こんにちは
 ```
 
