@@ -15,8 +15,7 @@ import (
 var (
 	cfgFile string
 
-	apiKey       string
-	gcpProjectID string
+	apiKey string
 
 	source string
 	target string
@@ -74,7 +73,6 @@ func init() {
 
 	//rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.gtl.yaml)")
 	rootCmd.PersistentFlags().StringVar(&apiKey, "api-key", "", "default is environment variable $GTL_API_KEY")
-	rootCmd.PersistentFlags().StringVar(&gcpProjectID, "gcp-project-id", "", "default is environment variable $GTL_GCP_PROJECT_ID")
 
 	rootCmd.Flags().StringVar(&source, "source", defaultSource, "BCP-47 language code of input text")
 	rootCmd.Flags().StringVar(&target, "target", defaultTarget, "BCP-47 language code of used to translate input text")
