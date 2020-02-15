@@ -8,7 +8,7 @@ import (
 	"google.golang.org/api/option"
 )
 
-// Translator is translator client interface.
+// Translator is a translator client interface.
 type Translator interface {
 	Translate(ctx context.Context, source, target string, contents []string) ([]translate.Translation, error)
 	GetSupportedLanguages(ctx context.Context, target language.Tag) ([]translate.Language, error)
@@ -26,7 +26,7 @@ func New(ctx context.Context, apiKey string) (Translator, error) {
 	}, nil
 }
 
-// Client
+// Client is a client for the translate API.
 type Client struct {
 	*translate.Client
 }
