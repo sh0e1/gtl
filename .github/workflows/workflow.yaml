@@ -23,5 +23,7 @@ jobs:
         $(go env GOPATH)/bin/golangci-lint run ./... -E misspell
 
     - name: Run unit test
+      env:
+        GTL_API_KEY: ${{ secrets.GTL_API_KEY }}
       run: |
         make test
