@@ -9,9 +9,10 @@ import (
 	googletranslate "cloud.google.com/go/translate"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/sh0e1/gtl/translate"
 	"golang.org/x/text/language"
 	"google.golang.org/api/option"
+
+	"github.com/sh0e1/gtl/translate"
 )
 
 func TestNew(t *testing.T) {
@@ -137,6 +138,40 @@ func TestClient_Translate(t *testing.T) {
 }
 
 func TestClient_GetSupportedLanguages(t *testing.T) {
-	t.Parallel()
-	t.Log("TODO: implement")
+	apiKey := os.Getenv("GTL_API_KEY")
+	if apiKey == "" {
+		t.Fatal("Must be set API Key to environment variable: GTL_API_KEY")
+	}
+
+	ctx := context.Background()
+	c, err := translate.New(ctx, apiKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.Close()
+
+	tests := []struct {
+		name   string
+		target language.Tag
+	}{
+		{
+			name:   "Success",
+			target: language.Japanese,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got, err := c.GetSupportedLanguages(context.Background(), tt.target)
+			if err != nil {
+				t.Errorf("err should be nil, but got %q", err)
+				return
+			}
+			if len(got) == 0 {
+				t.Error("got should not be empty")
+			}
+		})
+	}
 }
